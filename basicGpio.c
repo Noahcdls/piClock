@@ -27,9 +27,23 @@ int main(){
     if(ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, &led) < 0)
     {
         printf("Error setting GPIO 16 to output\n");
+        close(led.fd);
         close(fd);
         return -1;
     }
+    
+    /*Settting the GPIO*/
+    data.values[0] = 1;
+    if(ioctl(led.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data) < 0)
+    {
+        printf("Failed to set pin to high\n");
+        close(fd);
+        close(led.fd);
+        return -1;
+    }
+    
+    sleep(2);
+
     return 0;
     
 
