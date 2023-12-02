@@ -19,7 +19,7 @@ int main(){
         return -1;
     }
     led.flags = GPIOHANDLE_REQUEST_OUTPUT;
-    strcpy(led.consumer_label, "LED");
+    strcpy(led.consumer_label, "DC");
     memset(led.default_values, 0, sizeof(led.default_values));
     led.lines = 1;
     led.lineoffsets[0] = 16;
