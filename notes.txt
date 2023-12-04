@@ -1,0 +1,9 @@
+We can get 18-bit color if we send 3 bytes, MSB is 1, 6 bytes of date, 2 dont care.
+Image mode needs to 5 or 13
+
+setup SPI to be 16bit word
+
+
+RESET is set to GPIO 2
+DC is set to GPIO 23
+
