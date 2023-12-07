@@ -105,12 +105,13 @@ void spi_transfer(uint8_t * data, ssize_t len)
   spi.tx_buf = (uint8_t*)txBuff;
   spi.rx_buf = (uint8_t*)rxBuff;
   // Write data to txBuff
+  memset(&spi, 0, sizeof(spi));
   memcpy((uint8_t*)txBuff, data, len);
 
   
   int result = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi);
   if(result < 0){
-    printf("Failed to write on SPI bus %s\n", strerror(errno));
+    printf("Failed to write on SPI bus %d %s\n", errno, strerror(errno));
   }
 
 }
