@@ -107,9 +107,10 @@ void spi_transfer(uint8_t * data, ssize_t len)
   // Write data to txBuff
   memcpy((uint8_t*)txBuff, data, len);
 
-  if(ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi) < 0)
-  {
-    printf("Failed to write on SPI bus\n");
+  
+  int result = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi);
+  if(result < 0){
+    printf("Failed to write on SPI bus%d\n", result);
   }
 
 }
@@ -603,9 +604,9 @@ int ili9341_spi_init(void) {
     return -1;
   }
 
-
+  printf("Starting command list\n");
   ili9341_commandList(ILI9341_init);
-
+  printf("Setting dimensions and rotation\n");
   ili9341_set_dimensions(320, 240);
   ili9341_set_rotation(ILI9341_LANDSCAPE);
 
