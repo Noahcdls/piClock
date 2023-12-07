@@ -12,4 +12,4 @@ blinky:
 	gcc basicGpio.c -o blinky
 
 clean:
-	rm *.o
+	rm *.o spi-test blinky
