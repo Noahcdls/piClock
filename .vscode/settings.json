@@ -8,6 +8,8 @@
         "string": "c",
         "string_view": "c",
         "cstddef": "c",
-        "ili9341_font.h": "c"
+        "ili9341_font.h": "c",
+        "errno.h": "c",
+        "errno-base.h": "c"
     }
 }
