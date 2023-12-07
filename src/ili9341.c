@@ -43,7 +43,7 @@ int spi_fd, gpio_fd;
 struct gpiohandle_request dc_reset_req, button;
 struct gpiohandle_data data;
 uint8_t spiMode = 0; //default polarity and phase
-uint32_t spiSpeed = 30000000;
+uint32_t spiSpeed = 5000000;
 uint8_t spiWordSize = 8; // word size
 
 uint8_t txBuff [256];
@@ -98,14 +98,15 @@ static const uint8_t ILI9341_init[] = {
 void spi_transfer(uint8_t * data, ssize_t len)
 {
   struct spi_ioc_transfer spi;
+  // Write data to txBuff
+  memset(&spi, 0, sizeof(spi));
   spi.bits_per_word = 8;
   spi.cs_change = 1;
   spi.len = len;
   spi.speed_hz = spiSpeed;
   spi.tx_buf = (uint8_t*)txBuff;
   spi.rx_buf = (uint8_t*)rxBuff;
-  // Write data to txBuff
-  memset(&spi, 0, sizeof(spi));
+
   memcpy((uint8_t*)txBuff, data, len);
 
   
