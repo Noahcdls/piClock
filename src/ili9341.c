@@ -15,7 +15,7 @@
  */
 
 #include "ili9341.h"
-
+#include <errno.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
@@ -110,7 +110,7 @@ void spi_transfer(uint8_t * data, ssize_t len)
   
   int result = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &spi);
   if(result < 0){
-    printf("Failed to write on SPI bus%d\n", result);
+    printf("Failed to write on SPI bus %s\n", strerror(errno));
   }
 
 }
