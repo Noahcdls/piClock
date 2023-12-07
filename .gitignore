@@ -1,0 +1,5 @@
+*.o
+spi-test
+basicGpio
+main
+settings.json

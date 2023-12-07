@@ -3,6 +3,11 @@
         "mgos_ili9341.h": "c",
         "unistd.h": "c",
         "mgos_ili9341_hal.h": "c",
-        "ili9341.h": "c"
+        "ili9341.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "cstddef": "c",
+        "ili9341_font.h": "c"
     }
 }
