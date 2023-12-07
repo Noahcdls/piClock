@@ -121,14 +121,14 @@ void spi_transfer(uint8_t * data, ssize_t len)
 static void ili9341_spi_write8_cmd(uint8_t byte) {
   // Command has DC low and CS low while writing to SPI bus.
   data.values[1] = 0;// set the DC pin low 
-  ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+  ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
   spi_transfer(&byte, 1);
 }
 
 static void ili9341_spi_write8(uint8_t byte) {
   // Data has DC high and CS low while writing to SPI bus.
   data.values[1] = 1;// set the DC pin high 
-  ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+  ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
   spi_transfer(&byte, 1);
 }
 
@@ -148,12 +148,12 @@ static void ili9341_commandList(const uint8_t *addr) {
     numArgs &= ~ILI9341_DELAY;                          // Mask out delay bit
 
     data.values[1] = 0;// set the DC pin low 
-    ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+    ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 
     spi_transfer(&cmd, 1);
 
     data.values[1] = 1;// set the DC pin high for data 
-    ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+    ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
     spi_transfer((uint8_t *)addr, numArgs);
     addr += numArgs;
 
@@ -204,7 +204,7 @@ static void ili9341_send_pixels(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
   ili9341_set_clip(x0 + s_window.x0, y0 + s_window.y0, x1 + s_window.x0, y1 + s_window.y0);
   ili9341_spi_write8_cmd(ILI9341_RAMWR);
   data.values[1] = 1;
-  ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+  ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
   spi_transfer(buf, winsize * 2);
 }
 
@@ -234,7 +234,7 @@ static void ili9341_fillRectHelper(uint16_t x0, uint16_t y0, uint16_t w, uint16_
   ili9341_set_clip(x0, y0, x0 + w - 1, y0 + h - 1);
   ili9341_spi_write8_cmd(ILI9341_RAMWR);
   data.values[1] = 1;
-  ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+  ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
   while (todo_len) {
     if (todo_len >= buflen) {
       spi_transfer((uint8_t *)buf, buflen * 2);
@@ -257,7 +257,7 @@ static void ili9341_drawPixelHelper(uint16_t x0, uint16_t y0) {
   }
   ili9341_set_clip(x0 + s_window.x0, y0 + s_window.y0, x0 + s_window.x0 + 1, y0 + s_window.y0 + 1);
   data.values[1] = 1;
-  ioctl(gpio_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+  ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
   spi_transfer((uint8_t *)&s_window.fg_color, 2);
 }
 
@@ -571,6 +571,15 @@ int ili9341_spi_init(void) {
         close(gpio_fd);
         return -1;
     }
+    data.values[0] = 1;
+    data.values[0] = 0;
+    if(ioctl(dc_reset_req.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data) < 0)
+    {
+        printf("Error setting up pins\n");
+        close(dc_reset_req.fd);
+        close(gpio_fd);
+        return -1;
+    }    
     // Note tha data is high and command is low
 
   // Setup the SPI pins
@@ -578,6 +587,7 @@ int ili9341_spi_init(void) {
   if(spi_fd < 0)
   {
     printf("Failed to open spi device\n");
+    close(dc_reset_req.fd);
     close(gpio_fd);
     return -1;
   }
@@ -585,6 +595,7 @@ int ili9341_spi_init(void) {
   if(ioctl(spi_fd, SPI_IOC_WR_MODE, &spiMode) < 0)
   {
     printf("IOCTL failed to change the mode of the SPI device\n");
+    close(dc_reset_req.fd);
     close(spi_fd);
     close(gpio_fd);
     return -1;
@@ -593,6 +604,7 @@ int ili9341_spi_init(void) {
   if(ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed) < 0)
   {
     printf("IOCTL failed to write the bus speed of the SPI device");
+    close(dc_reset_req.fd);
     close(spi_fd);
     close(gpio_fd);
     return -1;
@@ -601,6 +613,7 @@ int ili9341_spi_init(void) {
   if(ioctl(spi_fd, SPI_IOC_WR_BITS_PER_WORD, &spiWordSize) < 0)
   {
     printf("IOCTL failed to set the word size of the SPI device\n");
+    close(dc_reset_req.fd);
     close(spi_fd);
     close(gpio_fd);
     return -1;
